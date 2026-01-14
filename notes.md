@@ -161,3 +161,15 @@ public void onConfigChanged(ConfigChanged event) {
         recalculateTabOrder();
     }
 }
+
+Recent Changes Made
+-------------------
+- Cached and resized side-panel icons once (moved image loading/resizing out of the render hot-path) — implemented in `sidePanelTab.java`.
+- Cached reflective `Method` lookups for keybinding/location during enum construction to avoid per-frame scanning/invocation.
+- Removed duplicate lookups in `KeybindsOverlayOverlay.getOrderOfTabs()` and avoided unnecessary per-iteration work.
+- Replaced Lombok `@Slf4j` usage with an explicit SLF4J logger and removed Lombok dependency to avoid annotation-processing/module errors on modern JDKs.
+- Added a starter `build.gradle` with a Java toolchain and regenerated a working Gradle wrapper so clones can `./gradlew build`.
+- Removed legacy, machine-specific Gradle metadata and added `GRADLE_REINIT.md` documenting how to safely re-init the wrapper and toolchain.
+- Disabled the automated `test` task (project contains a manual runnable test class) to avoid CI failures until tests are converted to a framework.
+
+These changes are focused on reducing per-frame work and making the repository easier to build and maintain.
