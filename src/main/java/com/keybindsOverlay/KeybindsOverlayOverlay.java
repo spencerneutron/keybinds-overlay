@@ -72,24 +72,20 @@ public class KeybindsOverlayOverlay extends Overlay {
     }
 
     private Keybind getKeybinding(sidePanelTab tab) {
-        Keybind keybind;
         try {
-            keybind = (Keybind) tab.getKeybindingMethod().invoke(config);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            keybind = new Keybind(KeyEvent.VK_UNDEFINED,0);
+            return tab.getKeybinding(config);
+        } catch (Exception e) {
+            return new Keybind(KeyEvent.VK_UNDEFINED, 0);
         }
-        return keybind;
     }
 
     private int getLocation(sidePanelTab tab)
     {
-        int location;
         try {
-            location = (int) tab.getLocationMethod().invoke(config);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            location = 0;
+            return tab.getLocation(config);
+        } catch (Exception e) {
+            return 0;
         }
-        return location;
     }
 
     private void addKeybinding(Keybind keybind)
