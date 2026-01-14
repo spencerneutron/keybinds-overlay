@@ -3,22 +3,29 @@ package com.keybindsOverlay;
 import net.runelite.client.util.ImageUtil;
 
 import java.awt.image.BufferedImage;
-import java.lang.reflect.Method;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
+import net.runelite.client.config.Keybind;
 
 public enum sidePanelTab {
 
-     COMBAT, SKILLS, QUESTS, INVENTORY, EQUIPMENT, PRAYER, SPELLBOOK;
+    COMBAT(KeybindsOverlayConfig::combatKey, KeybindsOverlayConfig::combatLocation),
+    SKILLS(KeybindsOverlayConfig::skillsKey, KeybindsOverlayConfig::skillsLocation),
+    QUESTS(KeybindsOverlayConfig::questsKey, KeybindsOverlayConfig::questsLocation),
+    INVENTORY(KeybindsOverlayConfig::inventoryKey, KeybindsOverlayConfig::inventoryLocation),
+    EQUIPMENT(KeybindsOverlayConfig::equipmentKey, KeybindsOverlayConfig::equipmentLocation),
+    PRAYER(KeybindsOverlayConfig::prayerKey, KeybindsOverlayConfig::prayerLocation),
+    SPELLBOOK(KeybindsOverlayConfig::spellbookKey, KeybindsOverlayConfig::spellbookLocation);
 
     // Not in use tabs rn.
     // ACCOUNT_MANAGEMENT, CLAN_CHAT, EMOTE,  FRIENDS, LOGOUT, MUSIC, OPTIONS
 
     private final BufferedImage icon;
-    private final Method keybindingMethod;
-    private final Method locationMethod;
+    private final Function<KeybindsOverlayConfig, Keybind> keySupplier;
+    private final ToIntFunction<KeybindsOverlayConfig> locationSupplier;
 
-    sidePanelTab()
+    sidePanelTab(Function<KeybindsOverlayConfig, Keybind> keySupplier,
+                 ToIntFunction<KeybindsOverlayConfig> locationSupplier)
     {
         BufferedImage img = null;
         try {
@@ -28,19 +35,8 @@ public enum sidePanelTab {
             System.err.println("errorLoading image for tab: " + name());
         }
         this.icon = img;
-
-        Method kb = null;
-        Method loc = null;
-        try {
-            kb = getMethod(name(), "Key");
-        } catch (RuntimeException ignored) {
-        }
-        try {
-            loc = getMethod(name(), "Location");
-        } catch (RuntimeException ignored) {
-        }
-        this.keybindingMethod = kb;
-        this.locationMethod = loc;
+        this.keySupplier = keySupplier;
+        this.locationSupplier = locationSupplier;
     }
 
     public BufferedImage getIcon() {
@@ -50,25 +46,20 @@ public enum sidePanelTab {
         throw new RuntimeException("Icon not available for tab: " + name());
     }
 
-    public Method getKeybindingMethod() {
-        return this.keybindingMethod;
-    }
-
-    public Method getLocationMethod() {
-        return this.locationMethod;
-    }
-
-    private Method getMethod(String mainSpecifier, String secondSpecifier)
-    {
-        Method[] methods = KeybindsOverlayConfig.class.getMethods();
-        Pattern pattern = Pattern.compile(mainSpecifier.toLowerCase() + secondSpecifier);
-        for (Method method : methods) {
-            Matcher matcher = pattern.matcher(method.getName());
-            if (matcher.lookingAt()) {
-                return method;
-            }
+    public Keybind getKeybinding(KeybindsOverlayConfig config) {
+        try {
+            return keySupplier.apply(config);
+        } catch (Exception e) {
+            return new Keybind(java.awt.event.KeyEvent.VK_UNDEFINED, 0);
         }
-        throw new RuntimeException("Programming error. \n" + mainSpecifier + secondSpecifier);
+    }
+
+    public int getLocation(KeybindsOverlayConfig config) {
+        try {
+            return locationSupplier.applyAsInt(config);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
 }
