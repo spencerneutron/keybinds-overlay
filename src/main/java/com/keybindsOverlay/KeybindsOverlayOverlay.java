@@ -21,6 +21,8 @@ public class KeybindsOverlayOverlay extends Overlay {
 
     private final KeybindsOverlayConfig config;
     private final PanelComponent panelComponent = new PanelComponent();
+    private final List<sidePanelTab> cachedOrder = new ArrayList<>();
+    private final Set<sidePanelTab> cachedVisible = new LinkedHashSet<>();
 
     @Inject
     private KeybindsOverlayOverlay(KeybindsOverlayConfig config)
@@ -35,16 +37,30 @@ public class KeybindsOverlayOverlay extends Overlay {
     @Override
     public Dimension render(Graphics2D graphics) {
 
-        panelComponent.getChildren().clear();
-
-        panelComponent.setOrientation(ComponentOrientation.HORIZONTAL);
-        panelComponent.setGap(new Point(20, 0));
-
-
-        for (sidePanelTab tab: getOrderOfTabs())
-        {
+        List<sidePanelTab> currentOrder = new ArrayList<>(getOrderOfTabs());
+        Set<sidePanelTab> currentVisible = new LinkedHashSet<>();
+        for (sidePanelTab tab : currentOrder) {
             if (isKeybindingDefined(getKeybinding(tab))) {
-                addTabToPanel(tab);
+                currentVisible.add(tab);
+            }
+        }
+
+        boolean needsRebuild = !currentOrder.equals(cachedOrder) || !currentVisible.equals(cachedVisible);
+
+        if (needsRebuild) {
+            cachedOrder.clear();
+            cachedOrder.addAll(currentOrder);
+            cachedVisible.clear();
+            cachedVisible.addAll(currentVisible);
+
+            panelComponent.getChildren().clear();
+            panelComponent.setOrientation(ComponentOrientation.HORIZONTAL);
+            panelComponent.setGap(new Point(20, 0));
+
+            for (sidePanelTab tab : currentOrder) {
+                if (currentVisible.contains(tab)) {
+                    addTabToPanel(tab);
+                }
             }
         }
 
