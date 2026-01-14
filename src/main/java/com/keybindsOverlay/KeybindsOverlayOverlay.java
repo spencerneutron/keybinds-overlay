@@ -106,8 +106,8 @@ public class KeybindsOverlayOverlay extends Overlay {
     {
         Map<sidePanelTab, Integer> orderOfTabs = new HashMap<>();
         for (sidePanelTab tab: sidePanelTab.values()){
-            orderOfTabs.merge(tab, getLocation(tab), (oldVale, newValue)-> newValue);
-            getLocation(tab);
+            int loc = getLocation(tab);
+            orderOfTabs.put(tab, loc);
         }
 
         return orderOfTabs.entrySet()

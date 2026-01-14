@@ -14,21 +14,48 @@ public enum sidePanelTab {
     // Not in use tabs rn.
     // ACCOUNT_MANAGEMENT, CLAN_CHAT, EMOTE,  FRIENDS, LOGOUT, MUSIC, OPTIONS
 
-    public BufferedImage getIcon() {
+    private final BufferedImage icon;
+    private final Method keybindingMethod;
+    private final Method locationMethod;
+
+    sidePanelTab()
+    {
+        BufferedImage img = null;
         try {
-            return ImageUtil.resizeImage(ImageUtil.loadImageResource(getClass(), "/sidePanel/tabs/"+ name().toLowerCase() + ".png"), 18, 18);
+            img = ImageUtil.loadImageResource(getClass(), "/sidePanel/tabs/" + name().toLowerCase() + ".png");
+            img = ImageUtil.resizeImage(img, 18, 18);
         } catch (Exception e) {
-            System.err.println("errorLoading image");
+            System.err.println("errorLoading image for tab: " + name());
         }
-        throw new RuntimeException("Shouldn't be here.");
+        this.icon = img;
+
+        Method kb = null;
+        Method loc = null;
+        try {
+            kb = getMethod(name(), "Key");
+        } catch (RuntimeException ignored) {
+        }
+        try {
+            loc = getMethod(name(), "Location");
+        } catch (RuntimeException ignored) {
+        }
+        this.keybindingMethod = kb;
+        this.locationMethod = loc;
+    }
+
+    public BufferedImage getIcon() {
+        if (this.icon != null) {
+            return this.icon;
+        }
+        throw new RuntimeException("Icon not available for tab: " + name());
     }
 
     public Method getKeybindingMethod() {
-        return getMethod(name(), "Key");
+        return this.keybindingMethod;
     }
 
     public Method getLocationMethod() {
-        return getMethod(name(), "Location");
+        return this.locationMethod;
     }
 
     private Method getMethod(String mainSpecifier, String secondSpecifier)
