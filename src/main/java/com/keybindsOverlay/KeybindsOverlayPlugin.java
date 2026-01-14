@@ -9,6 +9,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.eventbus.EventBus;
 
 @PluginDescriptor(
 	name = "Keybinds Overlay"
@@ -25,16 +26,21 @@ public class KeybindsOverlayPlugin extends Plugin
 	@Inject
 	private KeybindsOverlayOverlay overlay;
 
+	@Inject
+	private EventBus eventBus;
+
 	@Override
 	protected void startUp()
 	{
 		overlayManager.add(overlay);
+		eventBus.register(overlay);
 	}
 
 	@Override
 	protected void shutDown()
 	{
 		overlayManager.remove(overlay);
+		eventBus.unregister(overlay);
 	}
 
 	@Provides

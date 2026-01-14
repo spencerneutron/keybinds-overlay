@@ -16,6 +16,8 @@ import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
+import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.config.ConfigChanged;
 
 public class KeybindsOverlayOverlay extends Overlay {
 
@@ -31,6 +33,26 @@ public class KeybindsOverlayOverlay extends Overlay {
         setPriority(OverlayPriority.HIGH);
         this.config = config;
 
+    }
+
+    public void invalidateCache()
+    {
+        synchronized (cachedOrder) {
+            cachedOrder.clear();
+        }
+        synchronized (cachedVisible) {
+            cachedVisible.clear();
+        }
+        panelComponent.getChildren().clear();
+    }
+
+    @Subscribe
+    public void onConfigChanged(ConfigChanged event)
+    {
+        // Only react to this plugin's config group to avoid unnecessary rebuilds
+        if (event.getGroup() != null && event.getGroup().equals("example")) {
+            invalidateCache();
+        }
     }
 
 
